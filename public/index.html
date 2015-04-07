@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>Index</title>
+	<link href="./css/ui-lightness/jquery-ui-1.10.3.custom.css" rel="stylesheet" />
+	<link href="./css/ui.jqgrid.css" rel="stylesheet" />
+	<script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+	<script src="./js/i18n/grid.locale-en.js"></script>
+	<script src="./js/jquery.jqGrid.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			var lastid;
+			// 그리드를 생성합니다.
+			$('#grid').jqGrid({
+				url: 'http://127.0.0.1:52273/books/get',
+				editurl: 'http://127.0.0.1:52273/books/edit',
+				pager: '#pager',
+				datatype: 'jsonp',
+				jsonp: 'callback',
+				caption: 'INTERPARK\'s Weekly Bestseller',
+				height: '100%',
+				rowNum: 30,
+				rowList: [10, 20, 30],
+				multiselect: false,
+				autowidth: true,
+				colNames: ['id', 'name', 'author', 'isbn', 'page', 'publisher'],
+				colModel: [
+					{ name: 'id', index: 'id', width: 50, align: 'center' },
+					{ name: 'name', index: 'name', width: 300, align:'left', editable: true },
+					{ name: 'author', index: 'author', width: 90, align: 'center', editable: true },
+					{ name: 'isbn', index: 'isbn', width: 100, align: 'center', editable: true },
+					{ name: 'page', index: 'page', width: 60, align: 'center', editable: true },
+					{ name: 'publisher', index: 'publisher', width: 90, align: 'center', editable: true }
+				],
+				jsonReader: { 
+					root: "rows",
+					page: "page",
+					total: "total",
+					records: "records",
+					repeatitems: true,
+					cell: "cell",
+					id: "id" 
+				},
+				onSortCol: function (index, columnIndex, sortOrder) {
+					if(index == 'name' || index == 'author' || index == 'publisher') {
+						alert(index);
+						return 'stop';
+					}
+				},
+				ondblClickRow: function (rowid) {
+					if(rowid) {
+						if (rowid !== lastid) {
+							$('#grid').jqGrid('restoreRow', lastid);
+							$('#grid').jqGrid('editRow', rowid, true);
+							lastid = id;
+						} else {
+							$('#grid').jqGrid('restoreRow', lastid);
+							lastid = '';
+						}
+					}
+				},
+				onRightClickRow: function (rowid) {
+					location.href = "http://search.naver.com/search.naver?query=" + $('#grid').jqGrid('getCell', rowid, 1);
+				}
+			});
+			
+			$('#grid').jqGrid('navGrid', '#pager', { search: true, edit: true, add: true, del: true, refresh: true 
+								}).jqGrid('hideCol', 'isbn').trigger('reloadGrid');
+
+			$('#sc').click(function() {
+         			var pass = prompt('isbn을 보려면 비밀번호를 입력하세요.');
+				if(pass == '20133205' || pass == '20123426') {
+					$('#grid').jqGrid('showCol', 'isbn');
+				}
+			});
+
+			$('#hc').click(function() {
+				$('#grid').jqGrid('hideCol', 'isbn');
+			});
+		});
+		$(window).resize(function () {
+			$('#grid').setGridWidth($(this).width()*.800);
+		});
+	</script>
+</head>
+<body>
+	<table id="grid"></table>
+	<div id="pager"></div>
+	<br/>
+	<button id="hc">Hide Column ISBN</button>
+	<button id="sc">Show Column ISBN</button> 
+</body>
+</html>
